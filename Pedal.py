@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os
+import os, sys, getopt
 import logging
 import evdev
 
@@ -33,12 +33,39 @@ class Pedal:
             if state == 1: # down
                 os.system("pactl set-source-mute @DEFAULT_SOURCE@ 0")
 
-logger = logging.getLogger()
-logger.setLevel("WARNING")
+def usage():
+    print('Usage:\n\tPedal.py -d <joystick event FIFO> [-v <verbosity>]')
 
-pedal = Pedal("/dev/input/by-id/usb-1a86_e026-event-joystick")
+def main(argv):
+    logger = logging.getLogger()
 
-try:
-    pedal.watchLoop()
-except KeyboardInterrupt:
-    exit(0)
+    try:
+      opts, args = getopt.getopt(argv,"d:v:h",["device=","verbosity=","help"])
+    except getopt.GetoptError:
+        usage()
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            usage()
+            sys.exit(0)
+        elif opt in ("-d", "--device"):
+            devicePath = arg
+        elif opt in ("-v", "--verbosity"):
+            logger.setLevel(arg)
+        else:
+            logging.error("Unknown option(s)")
+            usage()
+
+    pedal = Pedal(devicePath)
+
+    try:
+        pedal.watchLoop()
+    except KeyboardInterrupt:
+        print()
+        exit(130)
+    except Exception as e:
+        logging.error(e)
+        exit(1)
+
+if __name__ == "__main__":
+   main(sys.argv[1:])
