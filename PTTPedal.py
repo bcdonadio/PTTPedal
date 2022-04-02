@@ -3,7 +3,7 @@ import os, sys, getopt
 import logging
 import evdev
 
-class Pedal:
+class PTTPedal:
     
     def __init__(self, path):
         self._device = evdev.InputDevice(path)
@@ -56,7 +56,7 @@ def main(argv):
             logging.error("Unknown option(s)")
             usage()
 
-    pedal = Pedal(devicePath)
+    pedal = PTTPedal(devicePath)
 
     try:
         pedal.watchLoop()
